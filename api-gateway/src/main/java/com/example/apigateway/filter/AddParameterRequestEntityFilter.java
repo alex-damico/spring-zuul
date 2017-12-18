@@ -52,7 +52,7 @@ public class AddParameterRequestEntityFilter extends ZuulFilter {
 			
 			JsonParser parser = new JsonParser();
 			JsonObject json = parser.parse(body).getAsJsonObject();
-			json.addProperty("createdBy", "created");
+			json.addProperty("createdBy", "paperino");
 			
 			context.set("requestEntity", new ByteArrayInputStream(json.toString().getBytes("UTF-8")));
 			
