@@ -1,0 +1,12 @@
+/target/
+/.classpath
+/.project
+/.factorypath
+/.settings/
+/.checkstyle
+*.patch
+*.bat
+.bpmn
+/bin/
+
+/.mvn/
