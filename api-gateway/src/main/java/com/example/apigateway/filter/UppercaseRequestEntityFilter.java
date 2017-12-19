@@ -4,6 +4,9 @@ import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.nio.charset.Charset;
 
+import javax.servlet.http.HttpServletRequest;
+
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpMethod;
@@ -42,8 +45,8 @@ public class UppercaseRequestEntityFilter extends ZuulFilter {
 	}
 
 	public Object run() {
-		try {			
-			RequestContext context = RequestContext.getCurrentContext();	
+		try {
+			RequestContext context = RequestContext.getCurrentContext();			
 			if (context.getRequest().getMethod().equals(HttpMethod.OPTIONS.toString())) {
 				return null;
 			}
@@ -52,13 +55,10 @@ public class UppercaseRequestEntityFilter extends ZuulFilter {
 			
 			JsonParser parser = new JsonParser();
 			JsonObject json = parser.parse(body).getAsJsonObject();
-			json.addProperty("firstname", json.get("firstname").toString().toUpperCase());
-			json.addProperty("lastname", json.get("lastname").toString().toUpperCase());
+			json.addProperty("firstname", json.get("firstname").toString().toUpperCase().replace("\"", StringUtils.EMPTY));
+			json.addProperty("lastname", json.get("lastname").toString().toUpperCase().replace("\"", StringUtils.EMPTY));
 			
 			context.set("requestEntity", new ByteArrayInputStream(json.toString().getBytes("UTF-8")));
-			
-			// check values
-			logger.debug("VALUES: " + getBody(context));
 			
 		}
 		catch (Exception ex) {
