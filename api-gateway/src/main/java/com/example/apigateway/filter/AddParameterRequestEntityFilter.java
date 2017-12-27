@@ -1,8 +1,15 @@
 package com.example.apigateway.filter;
 
+import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.UnsupportedEncodingException;
 import java.nio.charset.Charset;
+
+import javax.imageio.IIOException;
+import javax.servlet.ServletInputStream;
+import javax.servlet.http.HttpServletRequest;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -14,6 +21,8 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.netflix.zuul.ZuulFilter;
 import com.netflix.zuul.context.RequestContext;
+import com.netflix.zuul.http.HttpServletRequestWrapper;
+import com.netflix.zuul.http.ServletInputStreamWrapper;
 
 @Component
 public class AddParameterRequestEntityFilter extends ZuulFilter {
@@ -53,8 +62,8 @@ public class AddParameterRequestEntityFilter extends ZuulFilter {
 			JsonParser parser = new JsonParser();
 			JsonObject json = parser.parse(body).getAsJsonObject();
 			json.addProperty("createdBy", "paperino");
-			
-			context.set("requestEntity", new ByteArrayInputStream(json.toString().getBytes("UTF-8")));
+					
+			context.setRequest(modifyRequest(context.getRequest(), json.toString()));
 			
 			// check values
 			logger.debug("VALUES: " + getBody(context));
@@ -64,5 +73,44 @@ public class AddParameterRequestEntityFilter extends ZuulFilter {
 			logger.error("Error", ex);
 		}
 		return null;
+	}
+	
+	private static HttpServletRequestWrapper modifyRequest(HttpServletRequest request, String body) {
+
+	    HttpServletRequestWrapper wrapper = new HttpServletRequestWrapper(request) {
+	    	
+	        @Override
+	        public byte[] getContentData() {           	
+	            byte[] data = null;
+	            try {
+	                data = body.getBytes("UTF-8");
+	            } catch (UnsupportedEncodingException e) {
+	                e.printStackTrace();
+	            }
+	            return data;
+	        }
+
+	        @Override
+	        public int getContentLength() {
+	            return body.getBytes().length;
+	        }
+
+	        @Override
+	        public long getContentLengthLong() {
+	            return body.getBytes().length;
+	        }
+
+	        @Override
+	        public BufferedReader getReader() throws IIOException, UnsupportedEncodingException {
+	            return new BufferedReader(new InputStreamReader(new ByteArrayInputStream(body.getBytes("UTF-8"))));
+	        }
+
+	        @Override
+	        public ServletInputStream getInputStream() throws UnsupportedEncodingException {
+	            return new ServletInputStreamWrapper(body.getBytes("UTF-8"));
+	        }
+	    };
+
+	    return wrapper;
 	}
 }
