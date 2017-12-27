@@ -2,12 +2,12 @@ package com.example.apigateway.filter;
 
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
 import java.nio.charset.Charset;
 
-import javax.imageio.IIOException;
 import javax.servlet.ServletInputStream;
 import javax.servlet.http.HttpServletRequest;
 
@@ -78,7 +78,6 @@ public class AddParameterRequestEntityFilter extends ZuulFilter {
 	private static HttpServletRequestWrapper modifyRequest(HttpServletRequest request, String body) {
 
 	    HttpServletRequestWrapper wrapper = new HttpServletRequestWrapper(request) {
-	    	
 	        @Override
 	        public byte[] getContentData() {           	
 	            byte[] data = null;
@@ -101,7 +100,7 @@ public class AddParameterRequestEntityFilter extends ZuulFilter {
 	        }
 
 	        @Override
-	        public BufferedReader getReader() throws IIOException, UnsupportedEncodingException {
+	        public BufferedReader getReader() throws IOException {
 	            return new BufferedReader(new InputStreamReader(new ByteArrayInputStream(body.getBytes("UTF-8"))));
 	        }
 
